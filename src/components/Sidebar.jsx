@@ -48,9 +48,9 @@ export default function Sidebar({ active, onNavigate, open, onClose }) {
 
   return (
     <>
-      {open && <div className="fixed inset-0 bg-black/30 z-40 lg:hidden" onClick={onClose} />}
+      {open && <div className="fixed inset-0 bg-black/30 z-40" onClick={onClose} />}
 
-      <aside className={`fixed lg:sticky top-0 left-0 h-full w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 z-50 flex flex-col transition-all duration-300 ${open ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+      <aside className={`fixed top-0 left-0 h-full w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700 z-50 flex flex-col transition-all duration-300 ${open ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="p-5 border-b border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
