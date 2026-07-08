@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import Sidebar from './Sidebar'
-import { BRAND } from '../branding'
 
 export default function Layout({ page, onNavigate, children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -9,17 +8,17 @@ export default function Layout({ page, onNavigate, children }) {
     <div className="flex min-h-screen bg-gray-100 dark:bg-gray-950 transition-colors">
       <Sidebar active={page} onNavigate={onNavigate} open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      {/* Floating logo trigger */}
+      {/* Mobile hamburger */}
       <button
         onClick={() => setSidebarOpen(true)}
-        className="fixed top-3 left-3 z-30 w-10 h-10 rounded-xl shadow-lg flex items-center justify-center text-white font-bold text-lg overflow-hidden hover:opacity-90 transition-all"
-        style={{ backgroundColor: BRAND.primaryColor }}
-        title="Buka menu"
+        className="fixed top-3 left-3 z-30 lg:hidden w-9 h-9 bg-white dark:bg-gray-800 rounded-lg shadow flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
       >
-        {BRAND.logoImg ? <img src={BRAND.logoImg} alt="" className="w-full h-full object-contain" /> : BRAND.logo}
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
       </button>
 
-      <main className="flex-1 p-4 md:p-8 overflow-auto min-h-screen pl-16">
+      <main className="flex-1 p-4 md:p-8 overflow-auto min-h-screen lg:pl-0 pl-16">
         <div className="animate-fade-in">
           {children}
         </div>
