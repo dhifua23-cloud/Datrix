@@ -1,3 +1,7 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
 [[headers]]
   for = "*.js"
   [headers.values]
@@ -7,3 +11,8 @@
   for = "*.css"
   [headers.values]
     Content-Type = "text/css; charset=utf-8"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
