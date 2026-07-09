@@ -16,10 +16,12 @@ export default function DashboardPage() {
   const [areaFilter, setAreaFilter] = useState('Semua Area')
   const [namaFilter, setNamaFilter] = useState('Semua Karyawan')
   const [selectedNama, setSelectedNama] = useState(null)
+  const [tglFilter, setTglFilter] = useState('')
 
   const filteredAbsensi = absensi.filter((d) => {
     if (areaFilter !== 'Semua Area' && d.Area !== areaFilter) return false
     if (namaFilter !== 'Semua Karyawan' && d.Nama !== namaFilter) return false
+    if (tglFilter && !d.Tanggal?.startsWith(tglFilter)) return false
     return true
   })
 
@@ -44,8 +46,11 @@ export default function DashboardPage() {
         <div>
           <h2 className="text-xl font-bold text-gray-800 dark:text-white">Dashboard</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            {new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            {tglFilter
+              ? new Date(tglFilter).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+              : new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
             &nbsp;&middot; Total Karyawan: {karyawan.length}
+            {tglFilter && <button onClick={() => setTglFilter('')} className="ml-2 text-xs text-red-500 hover:underline">Hari Ini</button>}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
@@ -62,8 +67,8 @@ export default function DashboardPage() {
           <Pelanggaran data={filteredAbsensi} />
         </div>
 
-        <GrafikKehadiran data={filteredAbsensi} />
-        <KalenderAbsensi absensi={filteredAbsensi} />
+        <GrafikKehadiran data={absensi} selectedDate={tglFilter} key={tglFilter || 'all'} />
+        <KalenderAbsensi absensi={filteredAbsensi} onSelectDate={(d) => setTglFilter(d)} />
       </div>
 
       {selectedNama && (

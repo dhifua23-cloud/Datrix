@@ -18,8 +18,8 @@ export default function Layout({ page, onNavigate, children }) {
         </svg>
       </button>
 
-      <main className="flex-1 p-4 md:p-8 overflow-auto min-h-screen lg:pl-0 pl-16">
-        <div className="animate-fade-in">
+      <main className="flex-1 p-4 md:p-8 overflow-auto min-h-screen">
+        <div className="lg:pt-0 pt-12 animate-fade-in">
           {children}
         </div>
       </main>

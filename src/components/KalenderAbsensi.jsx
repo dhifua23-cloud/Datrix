@@ -8,7 +8,7 @@ const STATUS_WARNA = {
   Alpha: 'bg-gray-300',
 }
 
-export default function KalenderAbsensi({ absensi }) {
+export default function KalenderAbsensi({ absensi, onSelectDate }) {
   const now = new Date()
   const [bulan, setBulan] = useState(now.getMonth())
   const [tahun, setTahun] = useState(now.getFullYear())
@@ -70,7 +70,7 @@ export default function KalenderAbsensi({ absensi }) {
           const isToday = day === now.getDate() && bulan === now.getMonth() && tahun === now.getFullYear()
 
           return (
-            <div key={day} className={`border rounded-lg p-1.5 min-h-[60px] ${isToday ? 'border-blue-400 bg-blue-50' : 'border-gray-100'}`}>
+            <div key={day} onClick={() => onSelectDate?.(key)} className={`border rounded-lg p-1.5 min-h-[60px] cursor-pointer hover:shadow-md transition-shadow ${isToday ? 'border-blue-400 bg-blue-50' : 'border-gray-100'}`}>
               <p className={`text-xs font-medium ${isToday ? 'text-blue-600' : 'text-gray-600'}`}>{day}</p>
               <div className="mt-1 space-y-0.5">
                 {uniqueStatuses.slice(0, 3).map((s, j) => (
