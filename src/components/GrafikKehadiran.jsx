@@ -9,10 +9,26 @@ export default function GrafikKehadiran({ data, selectedDate }) {
       if (!d.Tanggal) return
       const tgl = d.Tanggal.slice(0, 10)
       if (selectedDate && tgl === selectedDate) selectedExists = true
-      if (!grouped[tgl]) grouped[tgl] = { tanggal: tgl, Hadir: 0, Telat: 0, Izin: 0, Sakit: 0, Alpha: 0 }
-      const status = d['Status Kehadiran']
-      if (grouped[tgl][status] !== undefined) grouped[tgl][status]++
-      else grouped[tgl].Alpha++
+      if (!grouped[tgl]) grouped[tgl] = { tanggal: tgl, Hadir: 0, Telat: 0, Izin: 0, Sakit: 0, Cuti: 0, Off: 0, Alpha: 0 }
+
+      const status = (d['Status Kehadiran'] || '').toLowerCase()
+      const shift = (d['Shift'] || d['shift'] || '').toLowerCase()
+
+      if (shift === 'off') {
+        grouped[tgl].Off++
+      } else if (status.includes('cuti') || status.includes('izin: cuti')) {
+        grouped[tgl].Cuti++
+      } else if (status === 'hadir') {
+        grouped[tgl].Hadir++
+      } else if (status === 'telat') {
+        grouped[tgl].Telat++
+      } else if (status === 'izin') {
+        grouped[tgl].Izin++
+      } else if (status === 'sakit') {
+        grouped[tgl].Sakit++
+      } else {
+        grouped[tgl].Alpha++
+      }
     })
     return {
       hasSelectedData: !selectedDate || selectedExists,
@@ -45,7 +61,9 @@ export default function GrafikKehadiran({ data, selectedDate }) {
           <Line type="monotone" dataKey="Telat" stroke="#ef4444" strokeWidth={2} dot={{ r: 4, strokeWidth: 2 }} connectNulls animationBegin={100} animationDuration={800} />
           <Line type="monotone" dataKey="Izin" stroke="#eab308" strokeWidth={2} dot={{ r: 4, strokeWidth: 2 }} connectNulls animationBegin={200} animationDuration={800} />
           <Line type="monotone" dataKey="Sakit" stroke="#f97316" strokeWidth={2} dot={{ r: 4, strokeWidth: 2 }} connectNulls animationBegin={300} animationDuration={800} />
-          <Line type="monotone" dataKey="Alpha" stroke="#9ca3af" strokeWidth={2} dot={{ r: 4, strokeWidth: 2 }} connectNulls animationBegin={400} animationDuration={800} />
+          <Line type="monotone" dataKey="Cuti" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4, strokeWidth: 2 }} connectNulls animationBegin={400} animationDuration={800} />
+          <Line type="monotone" dataKey="Off" stroke="#a855f7" strokeWidth={2} dot={{ r: 4, strokeWidth: 2 }} connectNulls animationBegin={500} animationDuration={800} />
+          <Line type="monotone" dataKey="Alpha" stroke="#9ca3af" strokeWidth={2} dot={{ r: 4, strokeWidth: 2 }} connectNulls animationBegin={600} animationDuration={800} />
           {selectedDate && <ReferenceLine x={selectedDate} stroke="#3b82f6" strokeDasharray="5 5" strokeWidth={2} label={{ value: 'Terpilih', position: 'top', fontSize: 10 }} />}
         </LineChart>
       </ResponsiveContainer>
