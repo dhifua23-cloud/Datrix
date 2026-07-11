@@ -4,7 +4,7 @@ import { APPS_SCRIPT_URL } from '../config'
 import { SkeletonTable } from '../components/Skeleton'
 import * as XLSX from 'xlsx'
 
-const PILIHAN_SHIFT = ['', 'Shift 1', 'Shift 2', 'Shift 3', 'Malam', 'Pagi', 'Siang', 'Libur']
+const PILIHAN_SHIFT = ['', 'Shift 1', 'Shift 2', 'Shift 3', 'Malam', 'Pagi', 'Siang', 'Libur', 'Off']
 const WARNA_SHIFT = {
   'Shift 1': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
   'Shift 2': 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
@@ -13,6 +13,7 @@ const WARNA_SHIFT = {
   'Pagi': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
   'Siang': 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
   'Libur': 'bg-red-50 text-red-400 dark:bg-red-900/10 dark:text-red-300',
+  'Off': 'bg-green-50 text-green-600 dark:bg-green-900/10 dark:text-green-400',
 }
 
 export default function ShiftPage() {
