@@ -62,7 +62,7 @@ export default function GrafikKehadiran({ data, selectedDate }) {
           <Line type="monotone" dataKey="Izin" stroke="#eab308" strokeWidth={2} dot={{ r: 4, strokeWidth: 2 }} connectNulls animationBegin={200} animationDuration={800} />
           <Line type="monotone" dataKey="Sakit" stroke="#f97316" strokeWidth={2} dot={{ r: 4, strokeWidth: 2 }} connectNulls animationBegin={300} animationDuration={800} />
           <Line type="monotone" dataKey="Cuti" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4, strokeWidth: 2 }} connectNulls animationBegin={400} animationDuration={800} />
-          <Line type="monotone" dataKey="Off" stroke="#a855f7" strokeWidth={2} dot={{ r: 4, strokeWidth: 2 }} connectNulls animationBegin={500} animationDuration={800} />
+          <Line type="monotone" dataKey="Off" stroke="#14b8a6" strokeWidth={2} dot={{ r: 4, strokeWidth: 2 }} connectNulls animationBegin={500} animationDuration={800} />
           <Line type="monotone" dataKey="Alpha" stroke="#9ca3af" strokeWidth={2} dot={{ r: 4, strokeWidth: 2 }} connectNulls animationBegin={600} animationDuration={800} />
           {selectedDate && <ReferenceLine x={selectedDate} stroke="#3b82f6" strokeDasharray="5 5" strokeWidth={2} label={{ value: 'Terpilih', position: 'top', fontSize: 10 }} />}
         </LineChart>
