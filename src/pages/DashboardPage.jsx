@@ -23,6 +23,8 @@ export default function DashboardPage() {
     if (namaFilter !== 'Semua Karyawan' && d.Nama !== namaFilter) return false
     if (tglFilter && !d.Tanggal?.startsWith(tglFilter)) return false
     return true
+  })
+
   const grafikData = absensi.filter((d) => {
     if (areaFilter !== 'Semua Area' && d.Area !== areaFilter) return false
     if (namaFilter !== 'Semua Karyawan' && d.Nama !== namaFilter) return false
