@@ -1,7 +1,19 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ReferenceLine } from 'recharts'
 
+const GARIS = [
+  { key: 'Hadir', warna: '#22c55e', label: 'Hadir' },
+  { key: 'Telat', warna: '#ef4444', label: 'Telat' },
+  { key: 'Izin', warna: '#eab308', label: 'Izin' },
+  { key: 'Sakit', warna: '#f97316', label: 'Sakit' },
+  { key: 'Cuti', warna: '#3b82f6', label: 'Cuti' },
+  { key: 'Off', warna: '#ec4899', label: 'Off' },
+  { key: 'Alpha', warna: '#9ca3af', label: 'Alpha' },
+]
+
 export default function GrafikKehadiran({ data, selectedDate }) {
+  const [filter, setFilter] = useState(GARIS.map((g) => g.key))
+
   const { hasSelectedData, chartData } = useMemo(() => {
     const grouped = {}
     let selectedExists = false
@@ -14,27 +26,23 @@ export default function GrafikKehadiran({ data, selectedDate }) {
       const status = (d['Status Kehadiran'] || '').toLowerCase()
       const shift = (d['Shift'] || d['shift'] || '').toLowerCase()
 
-      if (shift === 'off') {
-        grouped[tgl].Off++
-      } else if (status.includes('cuti') || status.includes('izin: cuti')) {
-        grouped[tgl].Cuti++
-      } else if (status === 'hadir') {
-        grouped[tgl].Hadir++
-      } else if (status === 'telat') {
-        grouped[tgl].Telat++
-      } else if (status === 'izin') {
-        grouped[tgl].Izin++
-      } else if (status === 'sakit') {
-        grouped[tgl].Sakit++
-      } else {
-        grouped[tgl].Alpha++
-      }
+      if (shift === 'off') grouped[tgl].Off++
+      else if (status.includes('cuti')) grouped[tgl].Cuti++
+      else if (status === 'hadir') grouped[tgl].Hadir++
+      else if (status === 'telat') grouped[tgl].Telat++
+      else if (status === 'izin') grouped[tgl].Izin++
+      else if (status === 'sakit') grouped[tgl].Sakit++
+      else grouped[tgl].Alpha++
     })
     return {
       hasSelectedData: !selectedDate || selectedExists,
       chartData: Object.values(grouped).sort((a, b) => a.tanggal.localeCompare(b.tanggal)).slice(-30),
     }
   }, [data, selectedDate])
+
+  const toggleFilter = (key) => {
+    setFilter((prev) => prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key])
+  }
 
   if (chartData.length === 0 || !hasSelectedData) {
     return (
@@ -50,6 +58,19 @@ export default function GrafikKehadiran({ data, selectedDate }) {
       <h2 className="text-lg font-semibold mb-3 text-gray-800 dark:text-white">
         Tren Kehadiran {selectedDate ? `(${selectedDate})` : '(30 Hari)'}
       </h2>
+
+      {/* Filter checkbox */}
+      <div className="flex flex-wrap gap-3 mb-4">
+        {GARIS.map((g) => (
+          <label key={g.key} className="flex items-center gap-1.5 text-xs cursor-pointer select-none"
+            style={{ color: g.warna }}>
+            <input type="checkbox" checked={filter.includes(g.key)} onChange={() => toggleFilter(g.key)}
+              className="accent-current w-3 h-3" />
+            {g.label}
+          </label>
+        ))}
+      </div>
+
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={chartData}>
           <CartesianGrid strokeDasharray="3 3" />
@@ -57,13 +78,12 @@ export default function GrafikKehadiran({ data, selectedDate }) {
           <YAxis />
           <Tooltip />
           <Legend />
-          <Line type="monotone" dataKey="Hadir" stroke="#22c55e" strokeWidth={2} dot={{ r: 4, strokeWidth: 2 }} connectNulls animationBegin={0} animationDuration={800} />
-          <Line type="monotone" dataKey="Telat" stroke="#ef4444" strokeWidth={2} dot={{ r: 4, strokeWidth: 2 }} connectNulls animationBegin={100} animationDuration={800} />
-          <Line type="monotone" dataKey="Izin" stroke="#eab308" strokeWidth={2} dot={{ r: 4, strokeWidth: 2 }} connectNulls animationBegin={200} animationDuration={800} />
-          <Line type="monotone" dataKey="Sakit" stroke="#f97316" strokeWidth={2} dot={{ r: 4, strokeWidth: 2 }} connectNulls animationBegin={300} animationDuration={800} />
-          <Line type="monotone" dataKey="Cuti" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4, strokeWidth: 2 }} connectNulls animationBegin={400} animationDuration={800} />
-          <Line type="monotone" dataKey="Off" stroke="#ec4899" strokeWidth={2} dot={{ r: 4, strokeWidth: 2 }} connectNulls animationBegin={500} animationDuration={800} />
-          <Line type="monotone" dataKey="Alpha" stroke="#9ca3af" strokeWidth={2} dot={{ r: 4, strokeWidth: 2 }} connectNulls animationBegin={600} animationDuration={800} />
+          {GARIS.map((g, i) =>
+            filter.includes(g.key) && (
+              <Line key={g.key} type="monotone" dataKey={g.key} stroke={g.warna} strokeWidth={2}
+                dot={{ r: 4, strokeWidth: 2 }} connectNulls animationBegin={i * 100} animationDuration={800} />
+            )
+          )}
           {selectedDate && <ReferenceLine x={selectedDate} stroke="#3b82f6" strokeDasharray="5 5" strokeWidth={2} label={{ value: 'Terpilih', position: 'top', fontSize: 10 }} />}
         </LineChart>
       </ResponsiveContainer>

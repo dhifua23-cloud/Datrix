@@ -23,6 +23,10 @@ export default function DashboardPage() {
     if (namaFilter !== 'Semua Karyawan' && d.Nama !== namaFilter) return false
     if (tglFilter && !d.Tanggal?.startsWith(tglFilter)) return false
     return true
+  const grafikData = absensi.filter((d) => {
+    if (areaFilter !== 'Semua Area' && d.Area !== areaFilter) return false
+    if (namaFilter !== 'Semua Karyawan' && d.Nama !== namaFilter) return false
+    return true
   })
 
   if (loading) {
@@ -67,7 +71,7 @@ export default function DashboardPage() {
           <Pelanggaran data={filteredAbsensi} />
         </div>
 
-        <GrafikKehadiran data={absensi} selectedDate={tglFilter} key={tglFilter || 'all'} />
+        <GrafikKehadiran data={grafikData} selectedDate={tglFilter} key={tglFilter || 'all'} />
         <KalenderAbsensi absensi={filteredAbsensi} onSelectDate={(d) => setTglFilter(d)} />
       </div>
 
