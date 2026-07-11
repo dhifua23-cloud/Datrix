@@ -22,6 +22,20 @@ export default function ShiftPage() {
   const [areaFilter, setAreaFilter] = useState('Semua Area')
   const [editCell, setEditCell] = useState(null)
 
+  const absensiShiftMap = useMemo(() => {
+    const map = {}
+    absensi.forEach((d) => {
+      if (!d.Tanggal || !d.Shift) return
+      const tgl = new Date(d.Tanggal)
+      if (tgl.getMonth() !== bulan || tgl.getFullYear() !== tahun) return
+      const nama = (d.Nama || '').trim().toLowerCase()
+      const tglKey = `${tahun}-${String(bulan + 1).padStart(2, '0')}-${String(tgl.getDate()).padStart(2, '0')}`
+      const key = `${nama}|${tglKey}`
+      if (!map[key]) map[key] = d.Shift
+    })
+    return map
+  }, [absensi, bulan, tahun])
+
   const daftarArea = useMemo(() => {
     return ['Semua Area', ...new Set(absensi.map((d) => d.Area).filter(Boolean))]
   }, [absensi])
@@ -43,7 +57,7 @@ export default function ShiftPage() {
 
   const getShift = (nama, tgl) => {
     const key = `${nama.toLowerCase()}|${tahun}-${String(bulan + 1).padStart(2, '0')}-${String(tgl).padStart(2, '0')}`
-    return shiftMap[key] || ''
+    return shiftMap[key] || absensiShiftMap[key] || ''
   }
 
   const changeShift = async (nama, tgl, value) => {
