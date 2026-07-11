@@ -8,7 +8,7 @@ import autoTable from 'jspdf-autotable'
 import { APPS_SCRIPT_URL } from '../config'
 
 export default function KaryawanPage() {
-  const { absensi, karyawan, loading, showToast } = useApp()
+  const { absensi, karyawan, daftarArea, loading, showToast } = useApp()
   const [cari, setCari] = useState('')
   const [areaFilter, setAreaFilter] = useState('Semua Area')
   const [bulanFilter, setBulanFilter] = useState('Semua')
@@ -17,10 +17,12 @@ export default function KaryawanPage() {
   const [detail, setDetail] = useState(null)
   const [editForm, setEditForm] = useState(null)
 
-  const daftarArea = useMemo(() => {
-    const areas = new Set(karyawan.map((k) => k.Area).filter(Boolean))
+  const daftarAreaOptions = useMemo(() => {
+    const areas = new Set()
+    karyawan.forEach((k) => { if (k.Area) areas.add(k.Area) })
+    if (daftarArea) daftarArea.forEach((a) => { if (a['Nama Area']) areas.add(a['Nama Area']) })
     return ['Semua Area', ...areas]
-  }, [karyawan])
+  }, [karyawan, daftarArea])
 
   const namaBulan = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
 
@@ -261,7 +263,7 @@ export default function KaryawanPage() {
           )}
           <select value={areaFilter} onChange={(e) => setAreaFilter(e.target.value)}
             className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-white">
-            {daftarArea.map((a) => <option key={a} value={a}>{a}</option>)}
+            {daftarAreaOptions.map((a) => <option key={a} value={a}>{a}</option>)}
           </select>
           <button onClick={() => setShowTambah(true)}
             className="px-4 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">+ Tambah</button>

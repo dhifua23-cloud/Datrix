@@ -12,7 +12,7 @@ import ExportButton from '../components/ExportButton'
 import { SkeletonCard, SkeletonTable, SkeletonChart } from '../components/Skeleton'
 
 export default function DashboardPage() {
-  const { absensi, karyawan, loading } = useApp()
+  const { absensi, karyawan, daftarArea, loading } = useApp()
   const [areaFilter, setAreaFilter] = useState('Semua Area')
   const [namaFilter, setNamaFilter] = useState('Semua Karyawan')
   const [selectedNama, setSelectedNama] = useState(null)
@@ -54,7 +54,7 @@ export default function DashboardPage() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <FilterBar absensi={absensi} areaFilter={areaFilter} setAreaFilter={setAreaFilter} namaFilter={namaFilter} setNamaFilter={setNamaFilter} />
+          <FilterBar absensi={absensi} areaList={daftarArea} areaFilter={areaFilter} setAreaFilter={setAreaFilter} namaFilter={namaFilter} setNamaFilter={setNamaFilter} />
           <ExportButton absensi={filteredAbsensi} />
         </div>
       </header>

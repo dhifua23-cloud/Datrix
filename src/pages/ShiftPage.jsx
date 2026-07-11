@@ -17,7 +17,7 @@ const WARNA_SHIFT = {
 }
 
 export default function ShiftPage() {
-  const { absensi, shiftMap, loading, showToast } = useApp()
+  const { absensi, shiftMap, daftarArea, loading, showToast } = useApp()
   const [bulan, setBulan] = useState(new Date().getMonth())
   const [tahun, setTahun] = useState(new Date().getFullYear())
   const [areaFilter, setAreaFilter] = useState('Semua Area')
@@ -37,9 +37,12 @@ export default function ShiftPage() {
     return map
   }, [absensi, bulan, tahun])
 
-  const daftarArea = useMemo(() => {
-    return ['Semua Area', ...new Set(absensi.map((d) => d.Area).filter(Boolean))]
-  }, [absensi])
+  const daftarAreaOptions = useMemo(() => {
+    const areas = new Set()
+    absensi.forEach((d) => { if (d.Area) areas.add(d.Area) })
+    if (daftarArea) daftarArea.forEach((a) => { if (a['Nama Area']) areas.add(a['Nama Area']) })
+    return ['Semua Area', ...areas]
+  }, [absensi, daftarArea])
 
   const { hari, daftarKaryawan } = useMemo(() => {
     const jmlHari = new Date(tahun, bulan + 1, 0).getDate()
@@ -99,7 +102,7 @@ export default function ShiftPage() {
         <div className="flex flex-wrap items-center gap-2">
           <select value={areaFilter} onChange={(e) => setAreaFilter(e.target.value)}
             className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-white">
-            {daftarArea.map((a) => <option key={a} value={a}>{a}</option>)}
+            {daftarAreaOptions.map((a) => <option key={a} value={a}>{a}</option>)}
           </select>
           <button onClick={() => { if (bulan === 0) { setBulan(11); setTahun(tahun - 1) } else setBulan(bulan - 1) }}
             className="px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-100 dark:border-gray-600">&lt;</button>

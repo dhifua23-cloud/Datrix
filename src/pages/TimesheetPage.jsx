@@ -21,16 +21,19 @@ const STATUS_SINGKAT = {
 }
 
 export default function TimesheetPage() {
-  const { absensi, karyawan, loading } = useApp()
+  const { absensi, karyawan, daftarArea, loading } = useApp()
   const [bulan, setBulan] = useState(new Date().getMonth())
   const [tahun, setTahun] = useState(new Date().getFullYear())
   const [areaFilter, setAreaFilter] = useState('Semua Area')
   const [cariNama, setCariNama] = useState('')
 
-  const daftarArea = useMemo(() => {
-    const areas = new Set(absensi.map((d) => d.Area).filter(Boolean))
+  const daftarAreaOptions = useMemo(() => {
+    const areas = new Set()
+    absensi.forEach((d) => { if (d.Area) areas.add(d.Area) })
+    karyawan.forEach((k) => { if (k.Area) areas.add(k.Area) })
+    if (daftarArea) daftarArea.forEach((a) => { if (a['Nama Area']) areas.add(a['Nama Area']) })
     return ['Semua Area', ...areas]
-  }, [absensi])
+  }, [absensi, karyawan, daftarArea])
 
   const { hari, daftarKaryawan, dataMap } = useMemo(() => {
     const jmlHari = new Date(tahun, bulan + 1, 0).getDate()
@@ -91,7 +94,7 @@ export default function TimesheetPage() {
             className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-white w-32" />
           <select value={areaFilter} onChange={(e) => setAreaFilter(e.target.value)}
             className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-white">
-            {daftarArea.map((a) => <option key={a} value={a}>{a}</option>)}
+            {daftarAreaOptions.map((a) => <option key={a} value={a}>{a}</option>)}
           </select>
           <button onClick={exportExcel}
             className="px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700">Excel</button>

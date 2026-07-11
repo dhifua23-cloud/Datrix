@@ -8,16 +8,18 @@ import autoTable from 'jspdf-autotable'
 const bulanPanjang = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
 
 export default function LaporanPage() {
-  const { absensi, gaji, karyawan, loading, showToast } = useApp()
+  const { absensi, gaji, karyawan, daftarArea, loading, showToast } = useApp()
   const [bulan, setBulan] = useState(new Date().getMonth())
   const [tahun, setTahun] = useState(new Date().getFullYear())
   const [areaFilter, setAreaFilter] = useState('Semua Area')
   const [tab, setTab] = useState('absensi')
 
-  const daftarArea = useMemo(() => {
-    const areas = new Set(absensi.map((d) => d.Area).filter(Boolean))
+  const daftarAreaOptions = useMemo(() => {
+    const areas = new Set()
+    absensi.forEach((d) => { if (d.Area) areas.add(d.Area) })
+    if (daftarArea) daftarArea.forEach((a) => { if (a['Nama Area']) areas.add(a['Nama Area']) })
     return ['Semua Area', ...areas]
-  }, [absensi])
+  }, [absensi, daftarArea])
 
   const filteredAbsensi = useMemo(() => {
     return absensi.filter((d) => {
@@ -144,7 +146,7 @@ export default function LaporanPage() {
         <div className="flex flex-wrap items-center gap-2">
           <select value={areaFilter} onChange={(e) => setAreaFilter(e.target.value)}
             className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-white">
-            {daftarArea.map((a) => <option key={a} value={a}>{a}</option>)}
+            {daftarAreaOptions.map((a) => <option key={a} value={a}>{a}</option>)}
           </select>
           <button onClick={() => { if (bulan === 0) { setBulan(11); setTahun(tahun - 1) } else setBulan(bulan - 1) }}
             className="px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">&lt;</button>
