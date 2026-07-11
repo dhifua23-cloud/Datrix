@@ -45,10 +45,10 @@ export async function fetchAbsensi() {
   const shiftMap = {}
   if (shiftData.values) {
     shiftData.values.forEach((row) => {
-      const nama = (row[0] || '').trim().toLowerCase()
-      const tgl = (row[1] || '').trim()
-      const shift = (row[2] || '').trim()
-      if (nama && tgl && shift) shiftMap[`${nama}|${tgl}`] = shift
+      const tgl = (row[0] || '').trim()
+      const nama = (row[1] || '').trim().toLowerCase()
+      const shift = (row[3] || '').trim()
+      if (nama && tgl && shift && tgl !== 'Tanggal') shiftMap[`${nama}|${tgl}`] = shift
     })
   }
 

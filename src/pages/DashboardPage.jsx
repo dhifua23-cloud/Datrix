@@ -3,6 +3,8 @@ import { useApp } from '../context/AppContext'
 import { fetchAbsensi } from '../services/sheetsApi'
 import SummaryCards from '../components/SummaryCards'
 import BelumAbsen from '../components/BelumAbsen'
+import SudahAbsen from '../components/SudahAbsen'
+import StatusHariIni from '../components/StatusHariIni'
 import Pelanggaran from '../components/Pelanggaran'
 import GrafikKehadiran from '../components/GrafikKehadiran'
 import FilterBar from '../components/FilterBar'
@@ -66,14 +68,27 @@ export default function DashboardPage() {
       </header>
 
       <div className="space-y-6">
-        <SummaryCards data={filteredAbsensi} />
+        <SummaryCards data={filteredAbsensi} onLihat={(nama) => setSelectedNama(nama)} />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <BelumAbsen absensi={filteredAbsensi} karyawan={karyawan} onLihat={(nama) => setSelectedNama(nama)} />
+          <SudahAbsen absensi={filteredAbsensi} onLihat={(nama) => setSelectedNama(nama)} />
           <Pelanggaran data={filteredAbsensi} />
         </div>
 
-        <GrafikKehadiran data={grafikData} selectedDate={tglFilter} key={tglFilter || 'all'} />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <StatusHariIni absensi={filteredAbsensi} title="Izin Hari Ini"
+            filterFn={(d) => d['Status Kehadiran'] === 'Izin'}
+            warna="text-yellow-600" onLihat={(nama) => setSelectedNama(nama)} />
+          <StatusHariIni absensi={filteredAbsensi} title="Cuti Hari Ini"
+            filterFn={(d) => (d['Status Kehadiran'] || '').toLowerCase().includes('cuti')}
+            warna="text-blue-600" onLihat={(nama) => setSelectedNama(nama)} />
+          <StatusHariIni absensi={filteredAbsensi} title="Off Hari Ini"
+            filterFn={(d) => (d['Shift'] || d['shift'] || '').toLowerCase() === 'off'}
+            warna="text-pink-600" onLihat={(nama) => setSelectedNama(nama)} />
+        </div>
+
+        <GrafikKehadiran data={grafikData} />
         <KalenderAbsensi absensi={filteredAbsensi} onSelectDate={(d) => setTglFilter(d)} />
       </div>
 
