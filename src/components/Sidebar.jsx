@@ -125,6 +125,10 @@ export default function Sidebar({ active, onNavigate, open, onClose }) {
             className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all">
             <span>🔄</span><span className="truncate">Refresh Data</span>
           </button>
+          <a href={`https://docs.google.com/spreadsheets/d/${user?.spreadsheetId}`} target="_blank" rel="noopener noreferrer"
+            className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all">
+            <span>📄</span><span className="truncate">Buka Spreadsheet</span>
+          </a>
           <button onClick={() => handleNav('branding')}
             className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all">
             <span>🎨</span><span className="truncate">Branding</span>
