@@ -1,4 +1,4 @@
-import { SPREADSHEET_ID, API_KEY, RANGE_ABSEN, RANGE_KARYAWAN, RANGE_GAJI, RANGE_SHIFT, RANGE_AREA } from '../config'
+import { getSpreadsheetId, getApiKey, RANGE_ABSEN, RANGE_KARYAWAN, RANGE_GAJI, RANGE_SHIFT, RANGE_AREA } from '../config'
 
 const BASE_URL = 'https://sheets.googleapis.com/v4/spreadsheets'
 
@@ -24,16 +24,19 @@ function parseGaji(rows) {
 }
 
 export async function fetchAbsensi() {
-  if (!API_KEY) {
+  const ssId = getSpreadsheetId()
+  const apiKey = getApiKey()
+
+  if (!apiKey) {
     throw new Error('API Key belum diatur. Buat file .env.local dengan VITE_GOOGLE_API_KEY=key_anda')
   }
 
   const [absenRes, karyawanRes, gajiRes, shiftRes, areaRes] = await Promise.all([
-    fetch(`${BASE_URL}/${SPREADSHEET_ID}/values/${encodeURIComponent(RANGE_ABSEN)}?key=${API_KEY}`),
-    fetch(`${BASE_URL}/${SPREADSHEET_ID}/values/${encodeURIComponent(RANGE_KARYAWAN)}?key=${API_KEY}`),
-    fetch(`${BASE_URL}/${SPREADSHEET_ID}/values/${encodeURIComponent(RANGE_GAJI)}?key=${API_KEY}`),
-    fetch(`${BASE_URL}/${SPREADSHEET_ID}/values/${encodeURIComponent(RANGE_SHIFT)}?key=${API_KEY}`),
-    fetch(`${BASE_URL}/${SPREADSHEET_ID}/values/${encodeURIComponent(RANGE_AREA)}?key=${API_KEY}`),
+    fetch(`${BASE_URL}/${ssId}/values/${encodeURIComponent(RANGE_ABSEN)}?key=${apiKey}`),
+    fetch(`${BASE_URL}/${ssId}/values/${encodeURIComponent(RANGE_KARYAWAN)}?key=${apiKey}`),
+    fetch(`${BASE_URL}/${ssId}/values/${encodeURIComponent(RANGE_GAJI)}?key=${apiKey}`),
+    fetch(`${BASE_URL}/${ssId}/values/${encodeURIComponent(RANGE_SHIFT)}?key=${apiKey}`),
+    fetch(`${BASE_URL}/${ssId}/values/${encodeURIComponent(RANGE_AREA)}?key=${apiKey}`),
   ])
 
   const [absenData, karyawanData, gajiData, shiftData, areaData] = await Promise.all([absenRes.json(), karyawanRes.json(), gajiRes.json(), shiftRes.json(), areaRes.json()])
