@@ -22,7 +22,7 @@ export default function RekapTahunanPage() {
   // ========== ABSENSI ==========
   const dataBulanan = useMemo(() => {
     const bulan = Array.from({ length: 12 }, (_, i) => ({
-      bulan: i, nama: bulanNama[i], Hadir: 0, Telat: 0, Izin: 0, Sakit: 0, Alpha: 0, total: 0,
+      bulan: i, nama: bulanNama[i], Hadir: 0, Telat: 0, Izin: 0, Sakit: 0, Cuti: 0, Off: 0, Alpha: 0, total: 0,
     }))
     absensi.forEach((d) => {
       if (!d.Tanggal) return
@@ -31,11 +31,14 @@ export default function RekapTahunanPage() {
       if (areaFilter !== 'Semua Area' && d.Area !== areaFilter) return
       const b = tgl.getMonth()
       if (!bulan[b]) return
-      const s = d['Status Kehadiran']
-      if (s === 'Hadir') bulan[b].Hadir++
-      else if (s === 'Telat') bulan[b].Telat++
-      else if (s === 'Izin') bulan[b].Izin++
-      else if (s === 'Sakit') bulan[b].Sakit++
+      const st = (d['Status Kehadiran'] || '').toLowerCase()
+      const sh = (d['Shift'] || d['shift'] || '').toLowerCase()
+      if (sh === 'off') bulan[b].Off++
+      else if (st.includes('cuti')) bulan[b].Cuti++
+      else if (st === 'hadir') bulan[b].Hadir++
+      else if (st === 'telat') bulan[b].Telat++
+      else if (st === 'izin') bulan[b].Izin++
+      else if (st === 'sakit') bulan[b].Sakit++
       else bulan[b].Alpha++
       bulan[b].total++
     })
@@ -43,8 +46,8 @@ export default function RekapTahunanPage() {
   }, [absensi, tahun, areaFilter])
 
   const totalAbsen = useMemo(() => {
-    const t = { Hadir: 0, Telat: 0, Izin: 0, Sakit: 0, Alpha: 0, total: 0 }
-    dataBulanan.forEach((b) => { t.Hadir += b.Hadir; t.Telat += b.Telat; t.Izin += b.Izin; t.Sakit += b.Sakit; t.Alpha += b.Alpha; t.total += b.total })
+    const t = { Hadir: 0, Telat: 0, Izin: 0, Sakit: 0, Cuti: 0, Off: 0, Alpha: 0, total: 0 }
+    dataBulanan.forEach((b) => { t.Hadir += b.Hadir; t.Telat += b.Telat; t.Izin += b.Izin; t.Sakit += b.Sakit; t.Cuti += b.Cuti; t.Off += b.Off; t.Alpha += b.Alpha; t.total += b.total })
     return t
   }, [dataBulanan])
 
@@ -115,7 +118,7 @@ export default function RekapTahunanPage() {
 
   const exportExcel = () => {
     if (tab === 'absensi') {
-      const data = [...dataBulanan.map((b) => ({ Bulan: b.nama, Hadir: b.Hadir, Telat: b.Telat, Izin: b.Izin, Sakit: b.Sakit, Alpha: b.Alpha, Total: b.total })), { Bulan: 'TOTAL', Hadir: totalAbsen.Hadir, Telat: totalAbsen.Telat, Izin: totalAbsen.Izin, Sakit: totalAbsen.Sakit, Alpha: totalAbsen.Alpha, Total: totalAbsen.total }]
+      const data = [...dataBulanan.map((b) => ({ Bulan: b.nama, Hadir: b.Hadir, Telat: b.Telat, Izin: b.Izin, Sakit: b.Sakit, Cuti: b.Cuti, Off: b.Off, Alpha: b.Alpha, Total: b.total })), { Bulan: 'TOTAL', Hadir: totalAbsen.Hadir, Telat: totalAbsen.Telat, Izin: totalAbsen.Izin, Sakit: totalAbsen.Sakit, Cuti: totalAbsen.Cuti, Off: totalAbsen.Off, Alpha: totalAbsen.Alpha, Total: totalAbsen.total }]
       const ws = XLSX.utils.json_to_sheet(data); const wb = XLSX.utils.book_new()
       XLSX.utils.book_append_sheet(wb, ws, 'Absensi'); XLSX.writeFile(wb, `absensi_tahunan_${tahun}.xlsx`)
     } else {
@@ -131,13 +134,13 @@ export default function RekapTahunanPage() {
     doc.text(`${tab === 'absensi' ? 'Absensi' : 'Gaji'} Tahunan ${tahun}`, 14, 15)
     const data = tab === 'absensi' ? dataBulanan : gajiPerBulan
     const headers = tab === 'absensi'
-      ? [['Bulan', 'Hadir', 'Telat', 'Izin', 'Sakit', 'Alpha', 'Total']]
+      ? [['Bulan', 'Hadir', 'Telat', 'Izin', 'Sakit', 'Cuti', 'Off', 'Alpha', 'Total']]
       : [['Bulan', 'Total Gaji', 'Total Lembur', 'Net']]
     const rows = data.map((b) => tab === 'absensi'
-      ? [b.nama, b.Hadir, b.Telat, b.Izin, b.Sakit, b.Alpha, b.total]
+      ? [b.nama, b.Hadir, b.Telat, b.Izin, b.Sakit, b.Cuti, b.Off, b.Alpha, b.total]
       : [b.nama, b.totalGaji, b.totalLembur, b.totalNet])
     rows.push(tab === 'absensi'
-      ? ['TOTAL', totalAbsen.Hadir, totalAbsen.Telat, totalAbsen.Izin, totalAbsen.Sakit, totalAbsen.Alpha, totalAbsen.total]
+      ? ['TOTAL', totalAbsen.Hadir, totalAbsen.Telat, totalAbsen.Izin, totalAbsen.Sakit, totalAbsen.Cuti, totalAbsen.Off, totalAbsen.Alpha, totalAbsen.total]
       : ['TOTAL', totalGajiThn.totalGaji, totalGajiThn.totalLembur, totalGajiThn.totalNet])
     doc.autoTable({ head: headers, body: rows, styles: { fontSize: 8 }, headStyles: { fillColor: [59, 130, 246] } })
     doc.save(`${tab}_tahunan_${tahun}.pdf`)
@@ -184,12 +187,14 @@ export default function RekapTahunanPage() {
 
       {tab === 'absensi' ? (
         <>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
             {[
               { label: 'Hadir', value: totalAbsen.Hadir, color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-900/20' },
               { label: 'Telat', value: totalAbsen.Telat, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-900/20' },
               { label: 'Izin', value: totalAbsen.Izin, color: 'text-yellow-600', bg: 'bg-yellow-50 dark:bg-yellow-900/20' },
               { label: 'Sakit', value: totalAbsen.Sakit, color: 'text-orange-600', bg: 'bg-orange-50 dark:bg-orange-900/20' },
+              { label: 'Cuti', value: totalAbsen.Cuti, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-900/20' },
+              { label: 'Off', value: totalAbsen.Off, color: 'text-pink-600', bg: 'bg-pink-50 dark:bg-pink-900/20' },
               { label: 'Alpha', value: totalAbsen.Alpha, color: 'text-gray-600', bg: 'bg-gray-50 dark:bg-gray-800' },
             ].map((item) => (
               <div key={item.label} className={`${item.bg} rounded-xl p-4 text-center transition-colors`}>
@@ -210,8 +215,10 @@ export default function RekapTahunanPage() {
                 <Bar dataKey="Hadir" fill="#22c55e" />
                 <Bar dataKey="Telat" fill="#ef4444" />
                 <Bar dataKey="Izin" fill="#eab308" />
-                <Bar dataKey="Sakit" fill="#f97316" />
-              </BarChart>
+            <Bar dataKey="Sakit" fill="#f97316" />
+            <Bar dataKey="Cuti" fill="#3b82f6" />
+            <Bar dataKey="Off" fill="#ec4899" />
+                </BarChart>
             </ResponsiveContainer>
           </div>
 
@@ -220,35 +227,41 @@ export default function RekapTahunanPage() {
               <thead>
                 <tr className="text-left text-gray-500 border-b bg-gray-50 dark:bg-gray-800/50">
                   <th className="p-3">Bulan</th>
-                  <th className="p-3 text-center">Hadir</th>
-                  <th className="p-3 text-center">Telat</th>
-                  <th className="p-3 text-center">Izin</th>
-                  <th className="p-3 text-center">Sakit</th>
-                  <th className="p-3 text-center">Alpha</th>
-                  <th className="p-3 text-center">Total</th>
+                <th className="p-3 text-center">Hadir</th>
+                <th className="p-3 text-center">Telat</th>
+                <th className="p-3 text-center">Izin</th>
+                <th className="p-3 text-center">Sakit</th>
+                <th className="p-3 text-center">Cuti</th>
+                <th className="p-3 text-center">Off</th>
+                <th className="p-3 text-center">Alpha</th>
+                <th className="p-3 text-center">Total</th>
                 </tr>
               </thead>
               <tbody>
-                {dataBulanan.map((b) => (
-                  <tr key={b.bulan} className="border-b last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                    <td className="p-3 font-medium">{b.nama}</td>
-                    <td className="p-3 text-center text-green-600">{b.Hadir}</td>
-                    <td className="p-3 text-center text-red-600">{b.Telat}</td>
-                    <td className="p-3 text-center text-yellow-600">{b.Izin}</td>
-                    <td className="p-3 text-center text-orange-600">{b.Sakit}</td>
-                    <td className="p-3 text-center text-gray-500">{b.Alpha}</td>
-                    <td className="p-3 text-center font-medium">{b.total}</td>
+                  {dataBulanan.map((b) => (
+                    <tr key={b.bulan} className="border-b last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                      <td className="p-3 font-medium">{b.nama}</td>
+                      <td className="p-3 text-center text-green-600">{b.Hadir}</td>
+                      <td className="p-3 text-center text-red-600">{b.Telat}</td>
+                      <td className="p-3 text-center text-yellow-600">{b.Izin}</td>
+                      <td className="p-3 text-center text-orange-600">{b.Sakit}</td>
+                      <td className="p-3 text-center text-blue-500">{b.Cuti}</td>
+                      <td className="p-3 text-center text-pink-500">{b.Off}</td>
+                      <td className="p-3 text-center text-gray-500">{b.Alpha}</td>
+                      <td className="p-3 text-center font-medium">{b.total}</td>
+                    </tr>
+                  ))}
+                  <tr className="bg-gray-50 dark:bg-gray-700/50 font-semibold">
+                    <td className="p-3">TOTAL</td>
+                    <td className="p-3 text-center text-green-600">{totalAbsen.Hadir}</td>
+                    <td className="p-3 text-center text-red-600">{totalAbsen.Telat}</td>
+                    <td className="p-3 text-center text-yellow-600">{totalAbsen.Izin}</td>
+                    <td className="p-3 text-center text-orange-600">{totalAbsen.Sakit}</td>
+                    <td className="p-3 text-center text-blue-500">{totalAbsen.Cuti}</td>
+                    <td className="p-3 text-center text-pink-500">{totalAbsen.Off}</td>
+                    <td className="p-3 text-center text-gray-500">{totalAbsen.Alpha}</td>
+                    <td className="p-3 text-center">{totalAbsen.total}</td>
                   </tr>
-                ))}
-                <tr className="bg-gray-50 dark:bg-gray-700/50 font-semibold">
-                  <td className="p-3">TOTAL</td>
-                  <td className="p-3 text-center text-green-600">{totalAbsen.Hadir}</td>
-                  <td className="p-3 text-center text-red-600">{totalAbsen.Telat}</td>
-                  <td className="p-3 text-center text-yellow-600">{totalAbsen.Izin}</td>
-                  <td className="p-3 text-center text-orange-600">{totalAbsen.Sakit}</td>
-                  <td className="p-3 text-center text-gray-500">{totalAbsen.Alpha}</td>
-                  <td className="p-3 text-center">{totalAbsen.total}</td>
-                </tr>
               </tbody>
             </table>
           </div>

@@ -8,6 +8,8 @@ const STATUS_WARNA = {
   Telat: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
   Izin: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
   Sakit: 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300',
+  Cuti: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+  Off: 'bg-pink-100 text-pink-800 dark:bg-pink-900/30 dark:text-pink-300',
   Alpha: 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400',
 }
 
@@ -16,8 +18,9 @@ const STATUS_SINGKAT = {
   Telat: 'T',
   Izin: 'I',
   Sakit: 'S',
+  Cuti: 'C',
+  Off: 'O',
   Alpha: 'A',
-  Libur: '-',
 }
 
 export default function TimesheetPage() {
@@ -49,7 +52,12 @@ export default function TimesheetPage() {
       const nama = (d.Nama || '').trim()
       if (!nama) return
       const key = `${nama}|${tglNum}`
-      map[key] = d['Status Kehadiran'] || 'Alpha'
+      const st = (d['Status Kehadiran'] || '').toLowerCase()
+      const sh = (d['Shift'] || d['shift'] || '').toLowerCase()
+      if (sh === 'off') map[key] = 'Off'
+      else if (st.includes('cuti')) map[key] = 'Cuti'
+      else if (st === 'hadir' || st === 'telat' || st === 'izin' || st === 'sakit') map[key] = st.charAt(0).toUpperCase() + st.slice(1)
+      else map[key] = d['Status Kehadiran'] || 'Alpha'
     })
 
     const filteredKaryawan = karyawan.filter((k) => {
@@ -122,6 +130,8 @@ export default function TimesheetPage() {
                 <th className="p-1.5 text-center text-red-500 min-w-[24px]">T</th>
                 <th className="p-1.5 text-center text-yellow-600 min-w-[24px]">I</th>
                 <th className="p-1.5 text-center text-orange-500 min-w-[24px]">S</th>
+                <th className="p-1.5 text-center text-blue-500 min-w-[24px]">C</th>
+                <th className="p-1.5 text-center text-pink-500 min-w-[24px]">O</th>
                 <th className="p-1.5 text-center text-gray-500 min-w-[24px]">A</th>
               </tr>
             </thead>
@@ -156,7 +166,7 @@ export default function TimesheetPage() {
                     )
                   })}
                   {(() => {
-                    let h = 0, t = 0, i = 0, s = 0, a = 0
+                    let h = 0, t = 0, i = 0, s = 0, c = 0, o = 0, a = 0
                     const today = new Date()
                     hari.forEach((d) => {
                       const st = dataMap[`${k.Nama}|${d}`]
@@ -164,6 +174,8 @@ export default function TimesheetPage() {
                       else if (st === 'Telat') t++
                       else if (st === 'Izin') i++
                       else if (st === 'Sakit') s++
+                      else if (st === 'Cuti') c++
+                      else if (st === 'Off') o++
                       else if (new Date(tahun, bulan, d) < today) a++
                     })
                     return (
@@ -172,6 +184,8 @@ export default function TimesheetPage() {
                         <td className="p-1.5 text-center text-red-500 font-medium">{t}</td>
                         <td className="p-1.5 text-center text-yellow-600 font-medium">{i}</td>
                         <td className="p-1.5 text-center text-orange-500 font-medium">{s}</td>
+                        <td className="p-1.5 text-center text-blue-500 font-medium">{c}</td>
+                        <td className="p-1.5 text-center text-pink-500 font-medium">{o}</td>
                         <td className="p-1.5 text-center text-gray-500 font-medium">{a}</td>
                       </>
                     )
@@ -183,11 +197,13 @@ export default function TimesheetPage() {
         </div>
       </div>
 
-      <div className="flex gap-3 mt-4 text-xs text-gray-500 dark:text-gray-400">
+      <div className="flex gap-3 mt-4 text-xs text-gray-500 dark:text-gray-400 flex-wrap">
         <span><span className="inline-block w-4 h-4 rounded bg-green-100 text-green-800 text-center text-[10px] leading-4 mr-1">H</span> Hadir</span>
         <span><span className="inline-block w-4 h-4 rounded bg-red-100 text-red-800 text-center text-[10px] leading-4 mr-1">T</span> Telat</span>
         <span><span className="inline-block w-4 h-4 rounded bg-yellow-100 text-yellow-800 text-center text-[10px] leading-4 mr-1">I</span> Izin</span>
         <span><span className="inline-block w-4 h-4 rounded bg-orange-100 text-orange-800 text-center text-[10px] leading-4 mr-1">S</span> Sakit</span>
+        <span><span className="inline-block w-4 h-4 rounded bg-blue-100 text-blue-800 text-center text-[10px] leading-4 mr-1">C</span> Cuti</span>
+        <span><span className="inline-block w-4 h-4 rounded bg-pink-100 text-pink-800 text-center text-[10px] leading-4 mr-1">O</span> Off</span>
         <span><span className="inline-block w-4 h-4 rounded bg-gray-100 text-gray-500 text-center text-[10px] leading-4 mr-1">A</span> Alpha</span>
       </div>
     </>
