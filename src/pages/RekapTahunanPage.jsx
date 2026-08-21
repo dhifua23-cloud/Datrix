@@ -37,8 +37,8 @@ export default function RekapTahunanPage() {
       else if (st.includes('cuti')) bulan[b].Cuti++
       else if (st === 'hadir') bulan[b].Hadir++
       else if (st === 'telat') bulan[b].Telat++
-      else if (st === 'izin') bulan[b].Izin++
-      else if (st === 'sakit') bulan[b].Sakit++
+      else if (st.includes('sakit')) bulan[b].Sakit++
+      else if (st.includes('izin')) bulan[b].Izin++
       else bulan[b].Alpha++
       bulan[b].total++
     })

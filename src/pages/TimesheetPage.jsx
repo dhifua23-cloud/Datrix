@@ -88,7 +88,9 @@ export default function TimesheetPage() {
       const key = `${nama}|${tgl}`
       if (sh === 'off') map[key] = 'Off'
       else if (st.includes('cuti')) map[key] = 'Cuti'
-      else if (st === 'hadir' || st === 'telat' || st === 'izin' || st === 'sakit') map[key] = st.charAt(0).toUpperCase() + st.slice(1)
+      else if (st.includes('sakit')) map[key] = 'Sakit'
+      else if (st.includes('izin')) map[key] = 'Izin'
+      else if (st === 'hadir' || st === 'telat') map[key] = st.charAt(0).toUpperCase() + st.slice(1)
       else map[key] = d['Status Kehadiran'] || 'Alpha'
     })
 

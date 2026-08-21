@@ -37,18 +37,30 @@ export default function LaporanPage() {
     filteredAbsensi.forEach((d) => {
       const nik = d.NIK || d.Nama || 'unknown'
       if (!perKaryawan[nik]) {
-        perKaryawan[nik] = { NIK: d.NIK, Nama: d.Nama, Hadir: 0, Telat: 0, Izin: 0, Sakit: 0, Alpha: 0, Total: 0 }
+        perKaryawan[nik] = { NIK: d.NIK, Nama: d.Nama, Hadir: 0, Telat: 0, Izin: 0, Sakit: 0, Cuti: 0, Off: 0, Alpha: 0, Total: 0 }
       }
-      const status = d['Status Kehadiran'] || 'Alpha'
-      if (perKaryawan[nik][status] !== undefined) perKaryawan[nik][status]++
+      const st = (d['Status Kehadiran'] || '').toLowerCase()
+      const sh = (d['Shift'] || '').toLowerCase()
+      if (sh === 'off') perKaryawan[nik].Off++
+      else if (st.includes('cuti')) perKaryawan[nik].Cuti++
+      else if (st === 'hadir') perKaryawan[nik].Hadir++
+      else if (st === 'telat') perKaryawan[nik].Telat++
+      else if (st.includes('sakit')) perKaryawan[nik].Sakit++
+      else if (st.includes('izin')) perKaryawan[nik].Izin++
       else perKaryawan[nik].Alpha++
       perKaryawan[nik].Total++
     })
 
-    const ringkasan = { Hadir: 0, Telat: 0, Izin: 0, Sakit: 0, Alpha: 0 }
+    const ringkasan = { Hadir: 0, Telat: 0, Izin: 0, Sakit: 0, Cuti: 0, Off: 0, Alpha: 0 }
     filteredAbsensi.forEach((d) => {
-      const status = d['Status Kehadiran'] || 'Alpha'
-      if (ringkasan[status] !== undefined) ringkasan[status]++
+      const st = (d['Status Kehadiran'] || '').toLowerCase()
+      const sh = (d['Shift'] || '').toLowerCase()
+      if (sh === 'off') ringkasan.Off++
+      else if (st.includes('cuti')) ringkasan.Cuti++
+      else if (st === 'hadir') ringkasan.Hadir++
+      else if (st === 'telat') ringkasan.Telat++
+      else if (st.includes('sakit')) ringkasan.Sakit++
+      else if (st.includes('izin')) ringkasan.Izin++
       else ringkasan.Alpha++
     })
 
@@ -107,7 +119,7 @@ export default function LaporanPage() {
 
   const exportExcel = () => {
     if (tab === 'absensi') {
-      const data = laporan.daftar.map((d) => ({ Nama: d.Nama, Hadir: d.Hadir, Telat: d.Telat, Izin: d.Izin, Sakit: d.Sakit, Alpha: d.Alpha, Total: d.Total }))
+      const data = laporan.daftar.map((d) => ({ Nama: d.Nama, Hadir: d.Hadir, Telat: d.Telat, Izin: d.Izin, Sakit: d.Sakit, Cuti: d.Cuti, Off: d.Off, Alpha: d.Alpha, Total: d.Total }))
       const ws = XLSX.utils.json_to_sheet(data); const wb = XLSX.utils.book_new()
       XLSX.utils.book_append_sheet(wb, ws, 'Absensi'); XLSX.writeFile(wb, `absensi_${bulanPanjang[bulan]}_${tahun}.xlsx`)
     } else {
@@ -122,8 +134,8 @@ export default function LaporanPage() {
     const doc = new jsPDF('landscape')
     doc.text(`Laporan ${tab === 'absensi' ? 'Absensi' : 'Gaji'} ${bulanPanjang[bulan]} ${tahun}`, 14, 15)
     if (tab === 'absensi') {
-      const headers = [['Nama', 'Hadir', 'Telat', 'Izin', 'Sakit', 'Alpha', 'Total']]
-      const rows = laporan.daftar.map((d) => [d.Nama, d.Hadir, d.Telat, d.Izin, d.Sakit, d.Alpha, d.Total])
+      const headers = [['Nama', 'Hadir', 'Telat', 'Izin', 'Sakit', 'Cuti', 'Off', 'Alpha', 'Total']]
+      const rows = laporan.daftar.map((d) => [d.Nama, d.Hadir, d.Telat, d.Izin, d.Sakit, d.Cuti, d.Off, d.Alpha, d.Total])
       doc.autoTable({ head: headers, body: rows, styles: { fontSize: 7 }, headStyles: { fillColor: [59, 130, 246] } })
     } else {
       const headers = [['Nama', 'Gaji Pokok', 'Harian', 'Hadir', 'Total Gaji', 'Jam Lembur', 'Total Lembur', 'Net']]
@@ -174,12 +186,14 @@ export default function LaporanPage() {
 
       {tab === 'absensi' ? (
         <>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 mb-6">
             {[
               { label: 'Hadir', value: laporan.ringkasan.Hadir, color: 'text-green-600', bg: 'bg-green-50 dark:bg-green-900/20' },
               { label: 'Telat', value: laporan.ringkasan.Telat, color: 'text-red-600', bg: 'bg-red-50 dark:bg-red-900/20' },
               { label: 'Izin', value: laporan.ringkasan.Izin, color: 'text-yellow-600', bg: 'bg-yellow-50 dark:bg-yellow-900/20' },
               { label: 'Sakit', value: laporan.ringkasan.Sakit, color: 'text-orange-600', bg: 'bg-orange-50 dark:bg-orange-900/20' },
+              { label: 'Cuti', value: laporan.ringkasan.Cuti, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-900/20' },
+              { label: 'Off', value: laporan.ringkasan.Off, color: 'text-pink-600', bg: 'bg-pink-50 dark:bg-pink-900/20' },
               { label: 'Alpha', value: laporan.ringkasan.Alpha, color: 'text-gray-600', bg: 'bg-gray-50 dark:bg-gray-800' },
             ].map((item) => (
               <div key={item.label} className={`${item.bg} rounded-xl p-4 text-center transition-colors`}>
@@ -199,6 +213,8 @@ export default function LaporanPage() {
                     <th className="p-3 text-center">Telat</th>
                     <th className="p-3 text-center">Izin</th>
                     <th className="p-3 text-center">Sakit</th>
+                    <th className="p-3 text-center">Cuti</th>
+                    <th className="p-3 text-center">Off</th>
                     <th className="p-3 text-center">Alpha</th>
                     <th className="p-3 text-center">Total</th>
                   </tr>
@@ -211,6 +227,8 @@ export default function LaporanPage() {
                       <td className="p-3 text-center text-red-600">{d.Telat}</td>
                       <td className="p-3 text-center text-yellow-600">{d.Izin}</td>
                       <td className="p-3 text-center text-orange-600">{d.Sakit}</td>
+                      <td className="p-3 text-center text-blue-500">{d.Cuti}</td>
+                      <td className="p-3 text-center text-pink-500">{d.Off}</td>
                       <td className="p-3 text-center text-gray-500">{d.Alpha}</td>
                       <td className="p-3 text-center font-medium">{d.Total}</td>
                     </tr>

@@ -28,8 +28,8 @@ export default function GrafikKehadiran({ data }) {
       else if (status.includes('cuti')) grouped[tgl].Cuti++
       else if (status === 'hadir') grouped[tgl].Hadir++
       else if (status === 'telat') grouped[tgl].Telat++
-      else if (status === 'izin') grouped[tgl].Izin++
-      else if (status === 'sakit') grouped[tgl].Sakit++
+      else if (status.includes('sakit')) grouped[tgl].Sakit++
+      else if (status.includes('izin')) grouped[tgl].Izin++
       else grouped[tgl].Alpha++
     })
     return Object.values(grouped).sort((a, b) => a.tanggal.localeCompare(b.tanggal)).slice(-30)
