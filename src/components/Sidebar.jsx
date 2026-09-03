@@ -10,6 +10,7 @@ const menu = [
   { key: 'cuti', label: 'Cuti' },
   { key: 'shift', label: 'Shift' },
   { key: 'area', label: 'Area' },
+  { key: 'rekap', label: 'Rekap Absensi' },
   {
     key: 'laporan', label: 'Laporan',
     children: [

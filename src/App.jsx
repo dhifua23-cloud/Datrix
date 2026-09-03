@@ -16,6 +16,7 @@ import RekapTahunanPage from './pages/RekapTahunanPage'
 import LaporanPage from './pages/LaporanPage'
 import EmployeeMovementPage from './pages/EmployeeMovementPage'
 import ContractPage from './pages/ContractPage'
+import RekapPage from './pages/RekapPage'
 
 function AppDashboard() {
   const { user } = useAuth()
@@ -42,6 +43,7 @@ function AppDashboard() {
     employeein: <EmployeeMovementPage type="in" />,
     employeeout: <EmployeeMovementPage type="out" />,
     kontrak: <ContractPage />,
+    rekap: <RekapPage />,
   }
 
   return (
