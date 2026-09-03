@@ -38,8 +38,9 @@ function hitungDurasi(jamAwal, jamAkhir) {
 
 export default function RekapPage() {
   const { absensi, daftarArea, loading } = useApp()
-  const [bulan, setBulan] = useState('Semua')
-  const [tahun, setTahun] = useState(new Date().getFullYear())
+  const now = new Date()
+  const [startDate, setStartDate] = useState(`${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`)
+  const [endDate, setEndDate] = useState(now.toISOString().slice(0, 10))
   const [areaFilter, setAreaFilter] = useState('Semua Area')
   const [cariNama, setCariNama] = useState('')
 
@@ -50,15 +51,12 @@ export default function RekapPage() {
     return ['Semua Area', ...areas]
   }, [absensi, daftarArea])
 
-  const namaBulan = ['', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
-
   // Group data per karyawan
   const data = useMemo(() => {
     const filtered = absensi.filter((d) => {
       if (!d.Tanggal) return false
-      const tgl = new Date(d.Tanggal)
-      if (bulan !== 'Semua' && tgl.getMonth() + 1 !== parseInt(bulan)) return false
-      if (tgl.getFullYear() !== tahun) return false
+      const tgl = d.Tanggal.slice(0, 10)
+      if (tgl < startDate || tgl > endDate) return false
       if (areaFilter !== 'Semua Area' && d.Area !== areaFilter) return false
       if (cariNama && !(d.Nama || '').toLowerCase().includes(cariNama.toLowerCase())) return false
       return true
@@ -102,7 +100,7 @@ export default function RekapPage() {
     return {
       list: Object.values(perKaryawan).sort((a, b) => a.nama.localeCompare(b.nama)),
     }
-  }, [absensi, bulan, tahun, areaFilter, cariNama])
+  }, [absensi, startDate, endDate, areaFilter, cariNama])
 
   const exportExcel = () => {
     const wb = XLSX.utils.book_new()
@@ -120,7 +118,7 @@ export default function RekapPage() {
       const ws = XLSX.utils.json_to_sheet(rows)
       XLSX.utils.book_append_sheet(wb, ws, k.nama.slice(0, 30))
     })
-    const nama = bulan !== 'Semua' ? `${namaBulan[parseInt(bulan)]}_${tahun}` : `Semua_${tahun}`
+    const nama = `periode_${startDate}_sampai_${endDate}`
     XLSX.writeFile(wb, `rekap_absensi_${nama}.xlsx`)
   }
 
@@ -141,13 +139,16 @@ export default function RekapPage() {
             className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-white">
             {daftarAreaOptions.map((a) => <option key={a} value={a}>{a}</option>)}
           </select>
-          <select value={bulan} onChange={(e) => setBulan(e.target.value)}
-            className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-white">
-            <option value="Semua">Semua Bulan</option>
-            {namaBulan.slice(1).map((b, i) => <option key={i + 1} value={i + 1}>{b}</option>)}
-          </select>
-          <input type="number" value={tahun} onChange={(e) => setTahun(parseInt(e.target.value) || new Date().getFullYear())}
-            className="w-20 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-white" />
+          <div className="flex items-center gap-1 text-sm">
+            <span className="text-gray-500 dark:text-gray-400">Dari:</span>
+            <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)}
+              className="border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-white" />
+          </div>
+          <div className="flex items-center gap-1 text-sm">
+            <span className="text-gray-500 dark:text-gray-400">Sampai:</span>
+            <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)}
+              className="border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-white" />
+          </div>
           <button onClick={exportExcel}
             className="px-3 py-1.5 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700">Excel</button>
         </div>
