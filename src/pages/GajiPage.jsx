@@ -10,8 +10,8 @@ import JSZip from 'jszip'
 
 export default function GajiPage() {
   const { absensi, karyawan, gaji, loading, showToast, updateGaji } = useApp()
-  const [bulan, setBulan] = useState(new Date().getMonth())
-  const [tahun, setTahun] = useState(new Date().getFullYear())
+  const [startDate, setStartDate] = useState(() => `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}-01`)
+  const [endDate, setEndDate] = useState(() => new Date().toISOString().slice(0, 10))
   const [areaFilter, setAreaFilter] = useState('Semua Area')
   const [edit, setEdit] = useState(null)
   const [form, setForm] = useState({ gajiPokok: '', gajiHarian: '', lembur: '', insentif: '', sp1: '', sp2: '', d30: '', d60: '', d60p: '' })
@@ -25,6 +25,7 @@ export default function GajiPage() {
   const [denda30State, setDenda30State] = useState({})
   const [denda60State, setDenda60State] = useState({})
   const [denda60plusState, setDenda60plusState] = useState({})
+  const periodeLabel = `${startDate} sd ${endDate}`
 
   const daftarArea = useMemo(() => {
     const areas = new Set(karyawan.map((k) => k.Area).filter(Boolean))
@@ -61,8 +62,8 @@ export default function GajiPage() {
   const rekap = useMemo(() => {
     const filtered = absensi.filter((d) => {
       if (!d.Tanggal) return false
-      const tgl = new Date(d.Tanggal)
-      return tgl.getMonth() === bulan && tgl.getFullYear() === tahun
+      const tgl = d.Tanggal.slice(0, 10)
+      return tgl >= startDate && tgl <= endDate
     })
 
     const perNama = {}
@@ -121,7 +122,7 @@ export default function GajiPage() {
         gajiHarianConfig: gajiMap[namaKey]?.gajiHarian || 0,
       }
     })
-  }, [absensi, filteredKaryawan, gajiMap, bulan, tahun])
+  }, [absensi, filteredKaryawan, gajiMap, startDate, endDate])
 
   const exportExcel = () => {
     const data = rekap.map((d) => ({
@@ -137,13 +138,13 @@ export default function GajiPage() {
     const ws = XLSX.utils.json_to_sheet(data)
     const wb = XLSX.utils.book_new()
     XLSX.utils.book_append_sheet(wb, ws, 'Gaji')
-    XLSX.writeFile(wb, `gaji_${namaBulan[bulan]}_${tahun}.xlsx`)
+    XLSX.writeFile(wb, `gaji_${startDate}_sampai_${endDate}.xlsx`)
     showToast('Download Excel berhasil')
   }
 
   const exportPDF = () => {
     const doc = new jsPDF('landscape')
-    doc.text(`Rekap Gaji ${namaBulan[bulan]} ${tahun}`, 14, 15)
+    doc.text(`Rekap Gaji ${startDate} sd ${endDate}`, 14, 15)
     const headers = [['No', 'Nama', 'Gaji Borongan', 'Gaji Harian', 'Hari', 'Rate', 'Jam', 'Gaji Lembur', 'Total Gaji', 'Insentif', 'Nett Gaji', 'SP1', 'SP2', '30m', '60m', '60++', 'Denda', 'Net Salary']]
     const rows = rekap.map((d) => [
       d.no, d.nama, d.gajiBorongan, d.gajiHarian, d.hariKerja, d.rateLembur,
@@ -153,7 +154,7 @@ export default function GajiPage() {
       d.denda, d.netSalary,
     ])
     autoTable(doc, { head: headers, body: rows, styles: { fontSize: 7 }, headStyles: { fillColor: [59, 130, 246] } })
-    doc.save(`gaji_${namaBulan[bulan]}_${tahun}.pdf`)
+    doc.save(`gaji_${startDate}_sampai_${endDate}.pdf`)
     showToast('Download PDF berhasil')
   }
 
@@ -164,7 +165,7 @@ export default function GajiPage() {
       doc.setFontSize(16); doc.text('DATRIX', 14, 20)
       doc.setFontSize(8); doc.text('Digital Attendance & Tracking Information System', 14, 26)
       doc.setFontSize(14); doc.text('SLIP GAJI', 105, 20, { align: 'center' })
-      doc.setFontSize(10); doc.text(`${namaBulan[bulan]} ${tahun}`, 105, 27, { align: 'center' })
+      doc.setFontSize(10); doc.text(`${periodeLabel}`, 105, 27, { align: 'center' })
       doc.setFontSize(10)
       doc.text(`Nama: ${d.nama}`, 14, 40); doc.text(`Area: ${d.area}`, 14, 46); doc.text(`Jabatan: ${d.jabatan}`, 14, 52)
       doc.text(`Bank: ${d.bank} - ${d.rekening}`, 14, 58)
@@ -192,7 +193,7 @@ export default function GajiPage() {
     })
     const content = await zip.generateAsync({ type: 'blob' })
     const url = URL.createObjectURL(content)
-    const a = document.createElement('a'); a.href = url; a.download = `slip_gaji_${namaBulan[bulan]}_${tahun}.zip`
+    const a = document.createElement('a'); a.href = url; a.download = `slip_gaji_${periodeLabel.replace(/[/:]/g, '-')}.zip`
     a.click(); URL.revokeObjectURL(url)
     showToast(`Download ${rekap.length} slip gaji`)
   }
@@ -200,7 +201,6 @@ export default function GajiPage() {
   const slipGaji = (d) => {
     try {
     const doc = new jsPDF()
-    const bulanNama = namaBulan[bulan]
     const title = localStorage.getItem('brand_nama') || 'Datrix'
 
     doc.setFontSize(16)
@@ -211,7 +211,7 @@ export default function GajiPage() {
     doc.setFontSize(14)
     doc.text('SLIP GAJI', 105, 20, { align: 'center' })
     doc.setFontSize(10)
-    doc.text(`${bulanNama} ${tahun}`, 105, 27, { align: 'center' })
+    doc.text(`${periodeLabel}`, 105, 27, { align: 'center' })
 
     doc.setFontSize(10)
     doc.text(`Nama: ${d.nama}`, 14, 40)
@@ -240,7 +240,7 @@ export default function GajiPage() {
       styles: { fontSize: 9 },
       headStyles: { fillColor: [59, 130, 246] },
     })
-    doc.save(`slip_gaji_${d.nama.replace(/\s+/g, '_')}_${bulanNama}_${tahun}.pdf`)
+    doc.save(`slip_gaji_${d.nama.replace(/\s+/g, '_')}_${periodeLabel.replace(/[/:]/g, '-')}.pdf`)
     showToast(`Slip gaji ${d.nama} terdownload`)
     } catch (e) { showToast('Error: ' + e.message, 'error') }
   }
@@ -251,8 +251,6 @@ export default function GajiPage() {
     localStorage.setItem('gaji_harian', globalHarian)
     showToast('Nilai global tersimpan')
   }
-
-  const namaBulan = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
 
   const simpanGaji = async () => {
     const nominal = bersihkanAngka(form.gajiPokok)
@@ -326,11 +324,16 @@ export default function GajiPage() {
             className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-white">
             {daftarArea.map((a) => <option key={a} value={a}>{a}</option>)}
           </select>
-          <button onClick={() => { if (bulan === 0) { setBulan(11); setTahun(tahun - 1) } else setBulan(bulan - 1) }}
-            className="px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">&lt;</button>
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300 w-32 text-center">{namaBulan[bulan]} {tahun}</span>
-          <button onClick={() => { if (bulan === 11) { setBulan(0); setTahun(tahun + 1) } else setBulan(bulan + 1) }}
-            className="px-3 py-1.5 text-sm border rounded-lg hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700">&gt;</button>
+          <div className="flex items-center gap-1 text-sm">
+            <span className="text-gray-500 dark:text-gray-400">Dari:</span>
+            <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)}
+              className="border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-white" />
+          </div>
+          <div className="flex items-center gap-1 text-sm">
+            <span className="text-gray-500 dark:text-gray-400">Sampai:</span>
+            <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)}
+              className="border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-700 text-gray-800 dark:text-white" />
+          </div>
         </div>
       </header>
 
