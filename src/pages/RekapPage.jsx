@@ -106,12 +106,13 @@ export default function RekapPage() {
     const wb = XLSX.utils.book_new()
     data.list.forEach((k) => {
       const rows = k.rows.map((r) => ({
+        'NIK': k.nik, 'Nama': k.nama, 'Area': k.area,
         Tanggal: r.tanggal, Shift: r.shift, 'Jadwal Masuk': r.jadwalMasuk, 'Jadwal Pulang': r.jadwalPulang,
         'Check In': r.jamMasuk, 'Check Out': r.jamPulang, 'Telat': r.telat, 'Pulang Cepat': r.early,
         'Jam Kerja': r.kerja, 'Lembur': r.lembur, 'Status': r.status,
       }))
       rows.push({
-        Tanggal: `TOTAL FOR EMPLOYEE : ${k.nik} - ${k.nama}`,
+        'NIK': '', 'Nama': `TOTAL FOR EMPLOYEE : ${k.nik} - ${k.nama}`, 'Area': '',
         'Telat': fmtMenit(k.totalTelat), 'Pulang Cepat': fmtMenit(k.totalEarly),
         'Jam Kerja': fmtMenit(k.totalKerja), 'Lembur': fmtMenit(k.totalLembur),
       })
