@@ -15,11 +15,14 @@ export function AppProvider({ children }) {
   const [toast, setToast] = useState(null)
 
   useEffect(() => {
+    setLoading(true)
     fetchAbsensi()
       .then((res) => {
         setAbsensi(res.absensi)
         setKaryawan(res.karyawan)
         setGaji(res.gaji)
+        setShiftMap(res.shiftMap || {})
+        setDaftarArea(res.daftarArea || [])
         setLoading(false)
       })
       .catch((err) => {
@@ -39,8 +42,7 @@ export function AppProvider({ children }) {
   }
 
   const refreshData = () => {
-    setLoading(true)
-    fetchAbsensi()
+    fetchAbsensi({ force: true })
       .then((res) => {
         setAbsensi(res.absensi)
         setKaryawan(res.karyawan)

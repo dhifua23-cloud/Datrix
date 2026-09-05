@@ -23,12 +23,43 @@ function parseGaji(rows) {
   }))
 }
 
-export async function fetchAbsensi() {
+const CACHE_TTL = 60 * 1000
+
+function getCacheKey(ssId) {
+  return `datrix_cache_${ssId}`
+}
+
+function readCache(ssId) {
+  try {
+    const raw = localStorage.getItem(getCacheKey(ssId))
+    if (!raw) return null
+    const { ts, data } = JSON.parse(raw)
+    if (Date.now() - ts > CACHE_TTL) return null
+    return data
+  } catch {
+    return null
+  }
+}
+
+function writeCache(ssId, data) {
+  try {
+    localStorage.setItem(getCacheKey(ssId), JSON.stringify({ ts: Date.now(), data }))
+  } catch {
+    // storage penuh / tidak tersedia — abaikan
+  }
+}
+
+export async function fetchAbsensi({ force = false } = {}) {
   const ssId = getSpreadsheetId()
   const apiKey = getApiKey()
 
   if (!apiKey) {
     throw new Error('API Key belum diatur. Buat file .env.local dengan VITE_GOOGLE_API_KEY=key_anda')
+  }
+
+  if (!force) {
+    const cached = readCache(ssId)
+    if (cached) return cached
   }
 
   const [absenRes, karyawanRes, gajiRes, shiftRes, areaRes] = await Promise.all([
@@ -55,11 +86,14 @@ export async function fetchAbsensi() {
     })
   }
 
-  return {
+  const result = {
     absensi: parseRows(absenData.values),
     karyawan: parseRows(karyawanData.values),
     gaji: parseGaji(gajiData.values),
     shiftMap,
     daftarArea: areaData.values ? parseRows(areaData.values) : [],
   }
+
+  writeCache(ssId, result)
+  return result
 }
